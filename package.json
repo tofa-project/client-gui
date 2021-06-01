@@ -1,0 +1,55 @@
+{
+  "name": "Tofa Alpha-0",
+  "version": "0.0.0a",
+  "description": "A decentralized 2FA based on onion routing",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.57",
+    "@electron-forge/maker-deb": "^6.0.0-beta.57",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.57",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
+    "@electron-forge/maker-zip": "^6.0.0-beta.57",
+    "electron": "^12.0.7"
+  },
+  "dependencies": {
+    "crypto-random-string": "^4.0.0",
+    "electron-reload": "^1.5.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "install": "^0.13.0",
+    "npm": "^7.13.0",
+    "ps-node": "^0.1.6",
+    "rpmbuild": "^0.0.23",
+    "ws": "^7.4.5"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "../logo.png"
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "electron_quick_start"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        }
+      ]
+    }
+  }
+}

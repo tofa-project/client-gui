@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tofa BETA</title>
+    <link href="css/icons.css" rel="stylesheet">
+    <link href="css/mat.css" rel="stylesheet">
+
+    <style>
+        tr {
+            border: 1px solid #e4e4e4
+        }
+
+        th {
+            border: 1px solid #e4e4e4
+        }
+
+        td {
+            border: 1px solid #e4e4e4
+        }
+
+        tr:hover {
+            background: rgba(245, 245, 245, 0.993);
+        }
+
+        textarea {
+            width: 100%;
+            height: 90%;
+            font-family: "consolas";
+            font-size: 10px;
+            padding: .6rem;
+            font-family: monospace;
+        }
+
+        #app {
+            padding: 1rem;
+            height: 100%;
+        }
+
+        html, body {
+            height: 100% ;
+        }
+    </style>
+
+    <!-- the dimmer -->
+    <style>
+        .dimmer {
+            position: absolute;
+            background: #2b2a2a;
+            height: 100%;
+            z-index: 10000000;
+            width: 100%;
+            opacity: 70%;
+            display: none;
+        }
+
+        .progress {
+            position: relative;
+            bottom: 7px;
+            background: black;
+        }
+    </style>
+</head>
+<body>
+
+ <!-- the dimmer -->
+ <div class="dimmer" id="dimmer" >
+    <div class="progress" progress="">
+        <div class="indeterminate red darken-2"></div>
+    </div>
+</div>
+
+<div id="app" class="center-align">
+   
+
+<!-- app/logs buttons -->
+<a class="btn blue waves-effect darken-2 tooltipped" 
+    data-tooltip="All registered and unregistered applications"
+    style="margin-right: 1rem;"
+    @click="page = 'apps'">Apps</a>
+<a class="btn blue waves-effect darken-2 tooltipped" 
+    data-tooltip="Logs from daemon."
+    data-position="right"
+    @click="page = 'log'">Log</a>
+
+<br>
+<br>
+<!-- debugging purposes 
+<button @click="$refs.RegRequest.fire({})">IN_REG</button>
+<button @click="$refs.AskRequest.fire({})">IN_ASK</button>
+<button @click="$refs.InfoRequest.fire({})">IN_NFO</button>
+-->
+
+<!--- apps list-->
+<div  v-if="page === 'apps'" >
+    <table v-if="appsArePublished">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th
+                    class="tooltipped" 
+                    data-tooltip="Apps's registered name on local storage."
+                    data-position="top"
+                >Name (?)</th>
+                <th
+                    class="tooltipped"
+                    data-tooltip="Whether application has been published to the introduction points/HSDIRs yet.<br>If it's not published then cloud service cannot register and 2FA cannot be used for the service."
+                    data-position="top"
+                >Published (?)</th>
+                <th
+                    class="tooltipped" 
+                    data-tooltip="Whether application is registered with the cloud service or not.<br>If it's not registered then 2FA cannot be used for the service."
+                    data-position="top"
+                >Registered (?)</th>
+                <th>
+                    Actions
+                    <div class="btn purple darken-2 waves-effect tooltipped"
+                        data-tooltip="Add new app"
+                        data-position="top" 
+                        @click="$refs.MakeService.fire()"
+                        >
+                        <i class="material-icons">add</i>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(app, key) in apps">
+                <td>{{ key+1 }}</td>
+                <td>{{ app.name }}</td>
+                <td>
+                    <span v-if="app.running" class="green-text">Yes</span>
+                    <span v-else class="red-text">No</span>
+                </td>
+                <td>
+                    <span v-if="app.state === '1'" class="green-text">Yes</span>
+                    <span v-else class="orange-text">No</span>
+                </td>
+                <td>
+                    <div class="btn blue waves-effect" @click="$refs.ViewApp.fire(app)">
+                        <i class="material-icons">remove_red_eye</i>
+                    </div>
+                    <div class="btn red waves-effect" @click="delApp(app)">
+                        <i class="material-icons">delete</i>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p v-else class="flow-text red-text">
+        Apps are being published<span v-html="loadingDots"></span>
+        <br>
+        You'll see them here once they're done broadcasting.
+    </p>
+</div>
+
+<!--- logs list -->
+<div style="height: inherit;" v-show="page === 'log'" >
+    <textarea class="browser-default" 
+            readonly 
+            v-model="textareaLog" 
+            id="textareaLog"
+            ></textarea>
+</div>
+
+<!--- some  modals -->
+<are-you-sure ref="AreYouSure"></are-you-sure>
+<make-service ref="MakeService"></make-service>
+<pass-input ref="PassInput"></pass-input>
+<no-internet ref="NoInternet"></no-internet>
+<view-app ref="ViewApp"></view-app>
+<reg-request ref="RegRequest"></reg-request>
+<ask-request ref="AskRequest"></ask-request>
+<info-request ref="InfoRequest"></info-request>
+
+</div>
+
+<script src="js/load-html.js"></script>
+<script src="js/mat.js"></script>
+<script src="js/vue.js"></script>
+
+<script src="comps/are-you-sure.js"></script>
+<script src="comps/make-service.js"></script>
+<script src="comps/no-internet.js"></script>
+<script src="comps/pass-input.js"></script>
+<script src="comps/view-app.js"></script>
+
+<script src="comps/cloud-events/reg-request.js"></script>
+<script src="comps/cloud-events/ask-request.js"></script>
+<script src="comps/cloud-events/info-request.js"></script>
+
+
+<script>
+
+const randId = function(){
+    return Math.random().toString(16).substr(7);
+}
+
+const _ = function(id){
+    return document.getElementById(id)
+}
+
+const getModal = function(id){
+    return M.Modal.getInstance(document.getElementById(id))
+}
+
+const toast = function(msg){
+    M.toast({ html: msg})
+}
+
+const showDimmer = function(){
+    _('dimmer').style.display = 'block'
+}
+
+const hideDimmer = function(){
+    _('dimmer').style.display = 'none'
+}
+
+const VApp = new Vue({
+    el: "#app",
+    data(){
+        return{
+            // can be 'apps' or 'log'
+            page: 'apps',
+            apps: [],
+            appsArePublished: false,
+            showDimmer: false,
+
+            textareaLog: '',
+            loadingDots: '',
+        }
+    },
+
+    watch:{
+        page(){
+            this.$nextTick(()=>{
+                M.AutoInit()
+                _('textareaLog').scrollTop = _('textareaLog').scrollHeight
+            })
+        },
+
+        apps(){
+            this.$nextTick(()=>{
+                M.AutoInit()
+                _('textareaLog').scrollTop = _('textareaLog').scrollHeight
+            })
+        }
+    },
+
+    methods:{
+        async delApp(app){
+            this.$refs.AreYouSure.fire(async ()=>{
+                showDimmer()
+
+                let res = await api.send('delApp', app.id)
+
+                if(res) 
+                    this.apps.splice(
+                        this.apps.findIndex(item=>app.id === item.id), 1
+                    )
+
+                hideDimmer()
+                toast( res ? 'App deleted' : 'error occurred' )
+            }, `If this app is linked with any banking/funding related accounts over internet 
+                <b>I beg of you</b> to double check them and make sure you have no remaining unclaimed funds!
+                Once you click "Yes" you will not be able to use the 2FA with the registered cloud server ever! 
+                This action is IRREVERSIBLE! Use it only when you know what you're doing! `)
+        },
+
+        async getApps(){
+            showDimmer()
+            this.apps = await api.send("getApps", null, 1000)
+
+            this.apps = this.apps.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+            hideDimmer()
+        },
+
+        async updateDots(){
+            setTimeout(()=>{
+                if(this.appsArePublished) return
+
+                if(this.loadingDots.length === 3) this.loadingDots = ''
+                else this.loadingDots += '.'
+
+                this.updateDots()
+            }, 300)
+        },
+
+        getAppById(id){
+            return this.apps.find(app=>app.id === id)
+        }
+
+    },
+
+    mounted(){
+        this.$nextTick(async ()=>{
+            this.updateDots()
+
+            // must have internet connection!
+            if(!navigator.onLine){
+                this.$refs.NoInternet.fire()
+                return
+            }
+
+            // check if daemon is started
+            if(await api.send('daemonIsStarted', null, 500)) {
+                console.log('meme')
+                this.appsArePublished = true
+                this.getApps()
+                return
+            }
+
+            // ask for password for daemon!
+            this.$refs.PassInput.fire()
+
+            // incoming events
+            //
+            api.receive("stdLog", str=> {
+                this.textareaLog += str 
+                this.$nextTick(()=>{
+                    _('textareaLog').scrollTop = _('textareaLog').scrollHeight
+                })
+            })
+            api.receive('incoming_registration', data=> this.$refs.RegRequest.fire(data) )
+            api.receive('incoming_ask', data=> this.$refs.AskRequest.fire(data) )
+            api.receive('incoming_info', data=> this.$refs.InfoRequest.fire(data) )
+
+            api.receive('app_published', ()=>this.getApps())
+            api.receive('app_unpublished', ()=> this.getApps() )
+            api.receive('app_under_dos', data=> {
+                let message = `Application ${this.getAppById(data.appID).name} may be under DoS! It has been unpublished!`
+                
+                toast (message)
+                api.send('fireNotif', "Warning!", message)
+            } )
+
+            api.receive('daemon_wrongPassword', ()=>{
+                toast ("Incorrect password!")
+                this.$refs.PassInput.fire()
+            })
+        })
+    }
+})
+
+</script>
+</body>
+</html>
