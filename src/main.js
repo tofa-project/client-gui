@@ -1,9 +1,10 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, ipcMain} = require('electron')
-require('electron-reload')(__dirname, {forceHardReset: true});
+//require('electron-reload')(__dirname, {forceHardReset: true});
 
 const path = require('path')
 const Daemon = require('./daemon/daemon')
+const fkill = require('fkill');
 
 function createWindow () {
   // Create the browser window.
@@ -46,12 +47,17 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', function () {
+app.on('window-all-closed', async function () {
 
   let d = Daemon.get()
 
   if (d){
     d.kill("SIGINT")   
+
+    if(process.platform === 'win32')
+      await fkill('tor.bin', {
+        force: true
+      })
   }
 
   if (process.platform !== 'darwin') {

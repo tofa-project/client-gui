@@ -1,6 +1,6 @@
 {
-  "name": "Tofa Alpha-0",
-  "version": "0.0.0a",
+  "name": "tofa-alpha-0",
+  "version": "0.0.0",
   "description": "A decentralized 2FA based on onion routing",
   "main": "src/main.js",
   "scripts": {
@@ -9,6 +9,7 @@
     "make": "electron-forge make"
   },
   "license": "BSD-3-Clause",
+  "author": "tgbv",
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.57",
     "@electron-forge/maker-deb": "^6.0.0-beta.57",
@@ -21,6 +22,7 @@
     "crypto-random-string": "^4.0.0",
     "electron-reload": "^1.5.0",
     "electron-squirrel-startup": "^1.0.0",
+    "fkill": "^7.1.1",
     "install": "^0.13.0",
     "npm": "^7.13.0",
     "ps-node": "^0.1.6",
@@ -34,19 +36,12 @@
       },
       "makers": [
         {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "electron_quick_start"
-          }
-        },
-        {
           "name": "@electron-forge/maker-zip",
           "platforms": [
+            "win32",
+            "linux",
             "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
+          ],
           "config": {}
         }
       ]
