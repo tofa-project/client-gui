@@ -17,7 +17,7 @@ const PassInputComp = Vue.component('pass-input', {
             if (this.password.length > 0) {
                 showDimmer()
 
-                res = await api.send('startDaemon', this.password, 5000)
+                res = await api.send('startDaemon', this.password, 10000)
                 if (res !== true) {
                     hideDimmer()
                     toast ('Could not start! '+res)

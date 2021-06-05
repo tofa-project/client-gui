@@ -362,6 +362,10 @@ const VApp = new Vue({
                 toast ("Incorrect password!")
                 this.$refs.PassInput.fire()
             })
+
+            api.receive('daemon_ERROR', str=>{
+                alert("Daemon error occurred: "+str)
+            })
         })
     }
 })

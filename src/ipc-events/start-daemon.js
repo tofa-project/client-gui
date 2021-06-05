@@ -46,7 +46,9 @@ module.exports = (ipcMain, mainWindow)=>{
     let prevLog = ""
 
     if(Daemon.get() === null)
-      Daemon.set(spawn(`${path.join(__dirname, `..`, `bin`, 'tofa-daemon.bin')}`))
+      Daemon.set(spawn(`${path.join(__dirname, `..`, `bin`, 'tofa-daemon.bin')}`, [
+        `-tor-bin=${path.join(__dirname, `..`, `bin`, 'tor.bin')}`
+      ] ))
     else {
       mainWindow.webContents.send("startDaemon_RES", true)
       return
@@ -73,6 +75,8 @@ module.exports = (ipcMain, mainWindow)=>{
       }
 
       if( str.includes("Apps broadcasted")) mainWindow.webContents.send("daemon_appsBroadcasted", true)
+
+      if( str.includes('panic:')) mainWindow.webContents.send("daemon_ERROR", str)
 
       prevLog = data.toString()
 
