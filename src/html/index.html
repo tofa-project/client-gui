@@ -175,10 +175,12 @@
 <reg-request ref="RegRequest"></reg-request>
 <ask-request ref="AskRequest"></ask-request>
 <info-request ref="InfoRequest"></info-request>
+<bad-time ref="BadTime"></bad-time>
 
 </div>
 
 <script src="js/load-html.js"></script>
+<script src="js/axios.js"></script>
 <script src="js/mat.js"></script>
 <script src="js/vue.js"></script>
 
@@ -187,6 +189,7 @@
 <script src="comps/no-internet.js"></script>
 <script src="comps/pass-input.js"></script>
 <script src="comps/view-app.js"></script>
+<script src="comps/bad-time.js"></script>
 
 <script src="comps/cloud-events/reg-request.js"></script>
 <script src="comps/cloud-events/ask-request.js"></script>
@@ -302,6 +305,24 @@ const VApp = new Vue({
             // must have internet connection!
             if(!navigator.onLine){
                 this.$refs.NoInternet.fire()
+                return
+            }
+
+            // date/time must be correct
+            try {
+                let res = await axios.get('https://tofa-project.tgbv.host/api/utc-time')
+                let remoteTS = res.data.ts
+                let myDT = new Date()
+
+                // calculate with an error of 60 seconds
+                if( Math.abs(+myDT - remoteTS) > 60*1000 )
+                {
+                    this.$refs.BadTime.fire()
+                    return
+                }
+            } catch(e){
+                alert('Could not sync date/time! Tofa will close.')
+                window.close()
                 return
             }
 

@@ -24,7 +24,7 @@ function createWindow () {
   )
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
   mainWindow.removeMenu()
 
   // register GUI<->IPC events and utils
