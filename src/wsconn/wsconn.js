@@ -68,9 +68,13 @@ const Conn = {
     if(this._instance) return 
 
     // connect
-    this._instance = new WS("ws://127.0.0.1:50750", {
-      headers: {  Authorization: `Bearer ${wsToken}`},
-    })
+    try {
+      this._instance = new WS("ws://127.0.0.1:50750", {
+        headers: {  Authorization: `Bearer ${wsToken}`},
+      })
+    } catch(e) {
+      console.log(e)
+    }
 
     // events
     //

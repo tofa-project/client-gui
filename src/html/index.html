@@ -328,7 +328,6 @@ const VApp = new Vue({
 
             // check if daemon is started
             if(await api.send('daemonIsStarted', null, 500)) {
-                console.log('meme')
                 this.appsArePublished = true
                 this.getApps()
                 return

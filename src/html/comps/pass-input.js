@@ -10,6 +10,8 @@ const PassInputComp = Vue.component('pass-input', {
 
     methods:{
         fire(){
+            hideDimmer()
+            this.Modal.close()
             this.Modal.open()
         },
 

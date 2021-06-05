@@ -63,6 +63,7 @@ module.exports = (ipcMain, mainWindow)=>{
 
       if (str.includes('OK') && prevLog.includes('Starting websocket RPC server')){
         WSConn.startWS(wsToken, mainWindow)
+
         WSConn.get().on('open', ()=>{
           mainWindow.webContents.send("startDaemon_RES", true)
         })    
@@ -76,7 +77,9 @@ module.exports = (ipcMain, mainWindow)=>{
 
       if( str.includes("Apps broadcasted")) mainWindow.webContents.send("daemon_appsBroadcasted", true)
 
-      if( str.includes('panic:')) mainWindow.webContents.send("daemon_ERROR", str)
+      if( (str.includes('panic:') || str.includes("FAIL"))  && 
+        !str.includes('cipher: message authentication failed')) 
+        mainWindow.webContents.send("daemon_ERROR", str)
 
       prevLog = data.toString()
 
@@ -84,7 +87,7 @@ module.exports = (ipcMain, mainWindow)=>{
       if(!mainWindow.isDestroyed())
         mainWindow.webContents.send("stdLog", data.toString())
 
-      //console.log(data.toString())
+      console.log(data.toString())
     })
   })
 }
